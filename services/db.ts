@@ -33,21 +33,41 @@ const SEED_FORECASTS: Forecast[] = [
   {
     id: 'tip-01',
     league: 'Champions League',
-    match: 'Qarabag vs Newcastle',
-    prediction: 'Mais de 1.5 Golos',
-    probability: 88,
+    match: 'Real Madrid vs AC Milan',
+    prediction: 'Vitória Real Madrid',
+    probability: 82,
     riskLevel: 'Baixo',
-    analysis: 'Tendência ofensiva forte de ambas as equipas.',
+    analysis: 'O Real Madrid joga em casa onde é historicamente dominante na Champions. Milan apresenta irregularidades defensivas.',
     createdAt: new Date().toISOString()
   },
   {
     id: 'tip-02',
     league: 'Champions League',
-    match: 'Olympiacos vs Leverkusen',
-    prediction: 'Leverkusen: Mais de 0.5 Golos',
-    probability: 92,
+    match: 'Liverpool vs Leverkusen',
+    prediction: 'Ambas Marcam: Sim',
+    probability: 78,
+    riskLevel: 'Médio',
+    analysis: 'Duelo de equipas ultra-ofensivas. O Leverkusen de Xabi Alonso raramente fica em branco, tal como o Liverpool em Anfield.',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'tip-03',
+    league: 'Champions League',
+    match: 'Sporting CP vs Man City',
+    prediction: 'Mais de 2.5 Golos',
+    probability: 85,
     riskLevel: 'Baixo',
-    analysis: 'Leverkusen em forma excepcional nesta temporada.',
+    analysis: 'O Sporting de Gyökeres está imparável, e o City de Guardiola sempre procura o golo. Cenário ideal para muitos golos.',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'tip-04',
+    league: 'Serie A',
+    match: 'Inter vs Arsenal',
+    prediction: 'Menos de 3.5 Golos',
+    probability: 72,
+    riskLevel: 'Médio',
+    analysis: 'Duas defesas muito sólidas e organizadas. Jogo tático que deve ser decidido nos detalhes, sem grandes goleadas.',
     createdAt: new Date().toISOString()
   }
 ];
@@ -68,21 +88,26 @@ export const database = {
       this._saveLocalForecasts(SEED_FORECASTS);
       return SEED_FORECASTS;
     }
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    // Garantir que sempre existam os 4 palpites novos se o fallback estiver vazio ou desatualizado
+    if (parsed.length < 4) {
+      this._saveLocalForecasts(SEED_FORECASTS);
+      return SEED_FORECASTS;
+    }
+    return parsed;
   },
 
   _saveLocalForecasts(forecasts: Forecast[]) {
     localStorage.setItem(LOCAL_FORECASTS_KEY, JSON.stringify(forecasts));
   },
 
-  // Função interna para aplicar privilégios de proprietário
   _applyOwnerPrivileges(user: DBUser | User): any {
     if (user.email.toLowerCase() === OWNER_EMAIL) {
       return {
         ...user,
         isActive: true,
         isPendingApproval: false,
-        expirationDate: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString() // 100 anos
+        expirationDate: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString()
       };
     }
     return user;
@@ -111,12 +136,11 @@ export const database = {
     return this._applyOwnerPrivileges({
       id: data.id, fullName: data.full_name, email: data.email, phone: data.phone, role: data.role,
       isActive: data.is_active, expirationDate: data.expiration_date, paymentProof: data.payment_proof,
-      isPendingApproval: data.is_pending_approval, password_hash: data.password_hash, created_at: data.created_at
+      isPendingApproval: data.is_pending_approval, passwordHash: data.password_hash, createdAt: data.created_at
     } as any);
   },
 
   async createUser(userData: Omit<DBUser, 'id' | 'passwordHash' | 'createdAt'>, password: string): Promise<User> {
-    // Verificar se é o proprietário Ricardo Soares
     let finalUserData = { ...userData };
     if (finalUserData.email.toLowerCase() === OWNER_EMAIL) {
       finalUserData.isActive = true;

@@ -48,7 +48,7 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onLogin }) => {
             <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">E-mail Elite</label>
             <input 
               type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-              className="w-full input-light rounded-2xl px-6 py-5 outline-none placeholder-gray-400 text-sm"
+              className="w-full input-dark rounded-2xl px-6 py-5 outline-none placeholder-gray-400 text-sm font-bold shadow-lg"
               placeholder="seu@email.ao"
             />
           </div>
@@ -56,7 +56,7 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onLogin }) => {
             <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Senha</label>
             <input 
               type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-              className="w-full input-light rounded-2xl px-6 py-5 outline-none placeholder-gray-400 text-sm"
+              className="w-full input-dark rounded-2xl px-6 py-5 outline-none placeholder-gray-400 text-sm font-bold shadow-lg"
               placeholder="••••••••"
             />
           </div>
@@ -68,7 +68,7 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onLogin }) => {
           </button>
         </form>
         <button onClick={onSwitch} className="w-full mt-8 text-[10px] text-slate-400 font-black uppercase tracking-widest hover:text-amber-600">
-          Novo Membro? <span className="text-amber-600 underline">Criar Conta</span>
+          Novo Membro? <span className="text-amber-600 underline font-bold">Criar Conta</span>
         </button>
       </div>
     </div>
