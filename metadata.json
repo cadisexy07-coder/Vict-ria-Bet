@@ -1,0 +1,7 @@
+{
+  "name": "Victória Bet",
+  "description": "Premium sports statistics and betting predictions app for the Angolan market, featuring daily insights and statistical analysis.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
