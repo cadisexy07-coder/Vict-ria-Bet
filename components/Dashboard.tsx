@@ -165,15 +165,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         </div>
       )}
 
-      {/* History Feed - ÚLTIMOS GANHOS DA ELITE */}
+      {/* History Feed - ÚLTIMOS GANHOS DA ELITE (VERIFICADOS SOFASCORE) */}
       <div className="mt-12 pb-10">
-        <div className="flex items-center gap-3 mb-6 px-1">
-          <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.25em]">Últimos Ganhos da Elite</h3>
-          <div className="flex-1 h-px bg-gray-100"></div>
+        <div className="flex items-center justify-between mb-6 px-1">
+          <div className="flex items-center gap-3">
+            <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.25em]">Últimos Ganhos da Elite</h3>
+            <div className="flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded text-[8px] font-black text-gray-400 uppercase">
+              <svg className="w-2.5 h-2.5 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293l-4 4a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L9 10.586l3.293-3.293a1 1 0 111.414 1.414z"/></svg>
+              SofaScore Verified
+            </div>
+          </div>
+          <div className="h-px flex-1 bg-gray-100 ml-4"></div>
         </div>
+        
         <div className="space-y-3">
            {history.map((h, i) => (
-             <div key={i} className="flex justify-between items-center p-5 bg-white border border-gray-100 rounded-[1.8rem] shadow-sm animate-fade-in" style={{animationDelay: `${i * 100}ms`}}>
+             <div key={i} className="flex justify-between items-center p-5 bg-white border border-gray-100 rounded-[1.8rem] shadow-sm animate-fade-in group hover:border-green-200 transition-colors" style={{animationDelay: `${i * 100}ms`}}>
                 <div className="flex flex-col">
                   <span className="text-[8px] font-black text-amber-600/60 uppercase tracking-widest mb-0.5">{h.league}</span>
                   <span className="text-sm font-black text-gray-800 tracking-tight">{h.match}</span>
@@ -181,16 +188,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 <div className="flex items-center gap-3">
                   <div className="text-right flex flex-col items-end">
                     <span className="text-[10px] font-black text-green-600 bg-green-50 px-3 py-1 rounded-lg uppercase border border-green-100 tracking-tighter shadow-sm">Green</span>
-                    <span className="text-[8px] text-gray-300 font-bold mt-1 uppercase">{h.result}</span>
+                    <span className="text-[9px] text-gray-400 font-bold mt-1 uppercase font-mono">{h.result}</span>
                   </div>
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]"></div>
+                  <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)] animate-pulse"></div>
                 </div>
              </div>
            ))}
            {history.length === 0 && !loading && (
-             <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest py-4">Sincronizando resultados históricos...</p>
+             <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest py-6 border border-dashed border-gray-100 rounded-3xl">Sincronizando resultados SofaScore...</p>
            )}
         </div>
+        
+        <p className="text-[9px] text-gray-300 font-medium text-center mt-6 uppercase tracking-widest">Resultados reais baseados nos dados de ontem.</p>
       </div>
     </div>
   );
