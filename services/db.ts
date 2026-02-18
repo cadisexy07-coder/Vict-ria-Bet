@@ -2,7 +2,8 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { User, DBUser, Forecast } from '../types';
 
-// Inicialização segura do Cliente Supabase
+const OWNER_EMAIL = 'cadisexy07@gmail.com';
+
 const getSupabaseClient = (): SupabaseClient | null => {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
@@ -28,7 +29,6 @@ const hashPassword = (password: string): string => {
 const LOCAL_USERS_KEY = 'vb_fallback_users';
 const LOCAL_FORECASTS_KEY = 'vb_fallback_forecasts';
 
-// Dados Iniciais (Seed) baseados na solicitação do utilizador
 const SEED_FORECASTS: Forecast[] = [
   {
     id: 'tip-01',
@@ -49,26 +49,6 @@ const SEED_FORECASTS: Forecast[] = [
     riskLevel: 'Baixo',
     analysis: 'Leverkusen em forma excepcional nesta temporada.',
     createdAt: new Date().toISOString()
-  },
-  {
-    id: 'tip-03',
-    league: 'Champions League',
-    match: 'Club Brugge vs Atl. Madrid',
-    prediction: 'Mais de 1.5 Golos',
-    probability: 84,
-    riskLevel: 'Médio',
-    analysis: 'Histórico recente de confrontos com média alta de golos.',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'tip-04',
-    league: 'Champions League',
-    match: 'Bodo/Glimt vs Inter',
-    prediction: 'HT (1ª Parte): Mais de 0.5 Golos',
-    probability: 79,
-    riskLevel: 'Médio',
-    analysis: 'Equipas que costumam entrar com intensidade máxima nos primeiros 45 minutos.',
-    createdAt: new Date().toISOString()
   }
 ];
 
@@ -84,7 +64,6 @@ export const database = {
 
   _getLocalForecasts(): Forecast[] {
     const data = localStorage.getItem(LOCAL_FORECASTS_KEY);
-    // Se não houver dados, retorna o SEED para não ficar vazio
     if (!data) {
       this._saveLocalForecasts(SEED_FORECASTS);
       return SEED_FORECASTS;
@@ -96,11 +75,24 @@ export const database = {
     localStorage.setItem(LOCAL_FORECASTS_KEY, JSON.stringify(forecasts));
   },
 
+  // Função interna para aplicar privilégios de proprietário
+  _applyOwnerPrivileges(user: DBUser | User): any {
+    if (user.email.toLowerCase() === OWNER_EMAIL) {
+      return {
+        ...user,
+        isActive: true,
+        isPendingApproval: false,
+        expirationDate: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString() // 100 anos
+      };
+    }
+    return user;
+  },
+
   async getUsers(): Promise<DBUser[]> {
     if (!supabase) return this._getLocalUsers();
     const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
     if (error) return this._getLocalUsers();
-    return (data || []).map((u: any) => ({
+    return (data || []).map((u: any) => this._applyOwnerPrivileges({
       id: u.id, fullName: u.full_name, email: u.email, phone: u.phone, role: u.role,
       isActive: u.is_active, expirationDate: u.expiration_date, paymentProof: u.payment_proof,
       isPendingApproval: u.is_pending_approval, passwordHash: u.password_hash, createdAt: u.created_at
@@ -108,23 +100,34 @@ export const database = {
   },
 
   async findUserByEmail(email: string): Promise<DBUser | undefined> {
-    if (!supabase) return this._getLocalUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
-    const { data, error } = await supabase.from('users').select('*').eq('email', email.toLowerCase()).single();
-    if (error && error.code !== 'PGRST116') return this._getLocalUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
+    const emailLower = email.toLowerCase();
+    if (!supabase) {
+      const user = this._getLocalUsers().find(u => u.email.toLowerCase() === emailLower);
+      return user ? this._applyOwnerPrivileges(user) : undefined;
+    }
+    const { data, error } = await supabase.from('users').select('*').eq('email', emailLower).single();
+    if (error && error.code !== 'PGRST116') return this._getLocalUsers().find(u => u.email.toLowerCase() === emailLower);
     if (!data) return undefined;
-    return {
+    return this._applyOwnerPrivileges({
       id: data.id, fullName: data.full_name, email: data.email, phone: data.phone, role: data.role,
       isActive: data.is_active, expirationDate: data.expiration_date, paymentProof: data.payment_proof,
-      isPendingApproval: data.is_pending_approval, passwordHash: data.password_hash, createdAt: data.created_at
-    };
+      isPendingApproval: data.is_pending_approval, password_hash: data.password_hash, created_at: data.created_at
+    } as any);
   },
 
   async createUser(userData: Omit<DBUser, 'id' | 'passwordHash' | 'createdAt'>, password: string): Promise<User> {
+    // Verificar se é o proprietário Ricardo Soares
+    let finalUserData = { ...userData };
+    if (finalUserData.email.toLowerCase() === OWNER_EMAIL) {
+      finalUserData.isActive = true;
+      finalUserData.expirationDate = new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString();
+    }
+
     if (!supabase) {
       const users = this._getLocalUsers();
-      if (users.find(u => u.email === userData.email)) throw new Error("Email já existe.");
+      if (users.find(u => u.email === finalUserData.email)) throw new Error("Email já existe.");
       const newUser: DBUser = {
-        ...userData, id: Math.random().toString(36).substr(2, 9),
+        ...finalUserData, id: Math.random().toString(36).substr(2, 9),
         passwordHash: hashPassword(password), createdAt: new Date().toISOString()
       };
       users.push(newUser);
@@ -132,24 +135,30 @@ export const database = {
       const { passwordHash, ...sessionUser } = newUser;
       return sessionUser;
     }
-    const emailExists = await this.findUserByEmail(userData.email);
+    
+    const emailExists = await this.findUserByEmail(finalUserData.email);
     if (emailExists) throw new Error("Este email já está registado.");
+    
     const { data, error } = await supabase.from('users').insert([{
-      full_name: userData.fullName, email: userData.email.toLowerCase(), phone: userData.phone,
-      role: userData.role, is_active: userData.isActive, expiration_date: userData.expirationDate,
-      is_pending_approval: userData.isPendingApproval, password_hash: hashPassword(password),
+      full_name: finalUserData.fullName, email: finalUserData.email.toLowerCase(), phone: finalUserData.phone,
+      role: finalUserData.role, is_active: finalUserData.isActive, expiration_date: finalUserData.expirationDate,
+      is_pending_approval: finalUserData.isPendingApproval, password_hash: hashPassword(password),
       created_at: new Date().toISOString()
     }]).select().single();
+    
     if (error) throw new Error("Falha no servidor.");
-    const u = data;
-    return { id: u.id, fullName: u.full_name, email: u.email, phone: u.phone, role: u.role, isActive: u.is_active, expirationDate: u.expiration_date, isPendingApproval: u.is_pending_approval };
+    return this._applyOwnerPrivileges({ 
+      id: data.id, fullName: data.full_name, email: data.email, phone: data.phone, 
+      role: data.role, isActive: data.is_active, expirationDate: data.expiration_date, 
+      isPendingApproval: data.is_pending_approval 
+    });
   },
 
   async validateLogin(email: string, password: string): Promise<User | null> {
     const user = await this.findUserByEmail(email);
     if (user && user.passwordHash === hashPassword(password)) {
       const { passwordHash, ...sessionUser } = user;
-      return sessionUser;
+      return this._applyOwnerPrivileges(sessionUser);
     }
     return null;
   },

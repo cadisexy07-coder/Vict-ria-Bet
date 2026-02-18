@@ -5,6 +5,40 @@ const getAiClient = () => {
   return new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 };
 
+export const validateReceiptOCR = async (base64Image: string) => {
+  const ai = getAiClient();
+  try {
+    // Remover o prefixo data:image/...;base64, se existir
+    const cleanBase64 = base64Image.split(',')[1] || base64Image;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: [
+        {
+          parts: [
+            { text: "Analise este comprovativo de pagamento Multicaixa (Angola). Extraia a Entidade, Referência e o Valor. Responda apenas com um objeto JSON no formato: {\"entidade\": \"string\", \"referencia\": \"string\", \"valor\": number}. Se não encontrar os dados, responda com {\"erro\": \"Não foi possível ler os dados do comprovativo\"}." },
+            {
+              inlineData: {
+                mimeType: "image/jpeg",
+                data: cleanBase64
+              }
+            }
+          ]
+        }
+      ],
+      config: {
+        responseMimeType: "application/json"
+      }
+    });
+
+    const result = JSON.parse(response.text || "{}");
+    return result;
+  } catch (error) {
+    console.error("OCR Error:", error);
+    return { erro: "Falha na análise inteligente do comprovativo." };
+  }
+};
+
 export const getSportsAnalysis = async (match: string, league: string) => {
   const ai = getAiClient();
   try {
@@ -67,7 +101,6 @@ export const getYesterdaysResults = async () => {
     });
   } catch (error) {
     console.error("SofaScore Sync Error:", error);
-    // Fallback com dados genéricos realistas em caso de falha na API de busca
     return [
       { league: "La Liga", match: "Barcelona vs Getafe", result: "1-0" },
       { league: "Serie A", match: "Inter vs Milan", result: "2-1" },
