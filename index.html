@@ -122,11 +122,29 @@
         box-shadow: 0 0 15px rgba(217, 119, 6, 0.1);
       }
 
+      /* Estilo para campos escuros em fundo claro */
+      .input-dark {
+        background: #4b4b4b !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        transition: all 0.3s ease;
+      }
+
+      .input-dark::placeholder {
+        color: rgba(255, 255, 255, 0.6) !important;
+      }
+
+      .input-dark:focus {
+        background: #3a3a3a !important;
+        border-color: #d97706 !important;
+        box-shadow: 0 0 20px rgba(217, 119, 6, 0.15);
+      }
+
       .glass-light {
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
-        border: 1px solid rgba(0, 0, 0, 0.03);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.08);
       }
 
       .football-overlay {

@@ -31,41 +31,41 @@ const Register: React.FC<RegisterProps> = ({ onSwitch, onRegister }) => {
   return (
     <div className="max-w-md mx-auto animate-fade-in py-12 px-6">
       <div className="text-center mb-10">
-        <h2 className="text-4xl font-black text-white tracking-tighter uppercase mb-3">Novo Membro Elite</h2>
-        <p className="text-amber-500/60 text-[10px] font-black uppercase tracking-[0.3em]">Inscrição em Protocolo VIP</p>
+        <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase mb-3">Novo Membro Elite</h2>
+        <p className="text-amber-600/60 text-[10px] font-black uppercase tracking-[0.3em]">Inscrição em Protocolo VIP</p>
       </div>
 
-      <div className="glass-dark p-10 rounded-[3rem] shadow-2xl border border-white/5">
+      <div className="glass-light p-10 rounded-[3rem] shadow-2xl border border-gray-100">
         <form onSubmit={handleSubmit} className="space-y-5">
           <input 
             type="text" required placeholder="Nome Completo"
-            className="w-full input-dark rounded-2xl px-6 py-5 outline-none placeholder-gray-700 text-sm font-medium"
+            className="w-full input-dark rounded-2xl px-6 py-5 outline-none text-white text-sm font-bold shadow-lg"
             value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})}
           />
           <input 
             type="tel" required placeholder="Telefone (+244)"
-            className="w-full input-dark rounded-2xl px-6 py-5 outline-none placeholder-gray-700 text-sm font-medium"
+            className="w-full input-dark rounded-2xl px-6 py-5 outline-none text-white text-sm font-bold shadow-lg"
             value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})}
           />
           <input 
             type="email" required placeholder="E-mail de Acesso"
-            className="w-full input-dark rounded-2xl px-6 py-5 outline-none placeholder-gray-700 text-sm font-medium"
+            className="w-full input-dark rounded-2xl px-6 py-5 outline-none text-white text-sm font-bold shadow-lg"
             value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})}
           />
           <input 
             type="password" required placeholder="Senha de Segurança"
-            className="w-full input-dark rounded-2xl px-6 py-5 outline-none placeholder-gray-700 text-sm font-medium"
+            className="w-full input-dark rounded-2xl px-6 py-5 outline-none text-white text-sm font-bold shadow-lg"
             value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})}
           />
           <button 
             type="submit" disabled={isRegistering}
-            className="w-full gold-gradient text-black font-black py-5 rounded-2xl uppercase text-[11px] tracking-[0.25em] transition-transform active:scale-95 shadow-xl mt-4"
+            className="w-full gold-gradient text-white font-black py-5 rounded-2xl uppercase text-[11px] tracking-[0.25em] transition-transform active:scale-95 shadow-xl mt-4"
           >
             {isRegistering ? 'Processando...' : 'Criar Conta VIP'}
           </button>
         </form>
-        <button onClick={onSwitch} className="w-full mt-8 text-[10px] text-gray-500 font-black uppercase tracking-widest hover:text-amber-500 transition-colors">
-          Já é membro? <span className="text-amber-500">Fazer Login</span>
+        <button onClick={onSwitch} className="w-full mt-8 text-[10px] text-slate-400 font-black uppercase tracking-widest hover:text-amber-600 transition-colors">
+          Já é membro? <span className="text-amber-600 underline font-bold">Fazer Login</span>
         </button>
       </div>
     </div>
